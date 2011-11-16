@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document>
+    <properties>
+        <title>Changes</title>
+    </properties>
+    <body>
+        <release version="1.00" date="2004-07-22" description="Création">
+            <action dev="lajmi" type="add">
+               ajout du cas ou la partie join-key n'est pas renseigné dans le fichier xml.
+               la table root est la seule table utulise.
+            </action>
+            <action dev="gonnot" type="add">
+               Extraction de la librairie à partir de agf-broadcast-common.
+            </action>
+            <action dev="coteg" type="update">
+               Refactoring de la méthode getUsedJoinKeyMap du SelectQueryBuilder pour
+               diminuer la complexité cyclomatique.
+            </action>
+        </release>
+    </body>
+</document>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://cyber888.com/xsd/xdocs.xsd">
+
+    <properties>
+        <title>sql-builder</title>
+    </properties>
+
+    <body>
+        <section name="Introduction">
+            <p>
+                Permet de construire des requêtes SQL à partir de définitions de jointures.
+            </p>
+        </section>
+        <section name="Configuration">
+            <p>
+                La librairie se configure via un
+                <code>net.codjo.sql.builder.QueryConfig</code>,
+                il existe une implémentation par défaut de cette interface. La table racine
+                désigne une table qui sera toujours présente dans la jointure de séléction.
+            </p>
+            <source>
+                <![CDATA[
+DefaultQueryConfig config = new DefaultQueryConfig();
+config.setRootTableName("R");
+
+JoinKey r2a = new JoinKey("R", JoinKey.Type.INNER, "A");
+r2a.addPart(new JoinKey.Part("COLUMNS_ID", ">", "ID"));
+config.add(r2a);
+
+JoinKey a2b = new JoinKey("A", JoinKey.Type.INNER, "B");
+a2b.addPart(new JoinKey.Part("SECTION_ID"));
+config.add(a2b);
+                ]]>
+            </source>
+            <subsection name="via XML">
+                <p>
+                    Il est possible de configurer les requêtes via un fichier XML.
+                    Exemple de syntaxe :
+                </p>
+                <source>
+                    <![CDATA[
+<config-list xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="query-config.xsd">
+    <query-config id="config1" root="AP_ROOT">
+        <join-key left="AP_ROOT" type="inner" right="AP_A">
+            <part left="COL_R1" operator="=" right="COL_A1"/>
+            <part left="COL_R2" operator="&lt;" right="COL_B2"/>
+        </join-key>
+        <join-key left="AP_C" type="right" right="AP_ROOT">
+            <part left="COL_C1" operator="&gt;=" right="COL_R1"/>
+            <part left="ddd" operator="=" right="ss"/>
+        </join-key>
+    </query-config>
+    <query-config id="config2" root="AP_ROOT_2">
+        <join-key left="AP_ROOT_2" type="left" right="AP_T">
+            <part left="COL_R1" operator="=" right="COL_A1"/>
+        </join-key>
+    </query-config>
+</config-list>
+                    ]]>
+                </source>
+                <p>
+                    Exemple de lecture du fichier :
+                </p>
+                <source>
+                    <![CDATA[
+XmlQueryConfigList configList =
+    XmlQueryConfigList.newXmlQueryConfigList(Maclass
+        .getResourceAsStream("monFichier.xml"));
+QueryConfig config = configList.getConfig("config1");
+
+                    ]]>
+                </source>
+                <p>
+                    Si une seule table est utilisé dans le select, ne reseignez pas les 'join-key' et c'est la table root
+                    qui sera dans la clause from.
+                </p>
+            </subsection>
+        </section>
+        <section name="Requête select">
+            <p>
+                Pour construire des requête avec jointure il suffit d'utiliser la Factory
+                <code>net.codjo.sql.builder.QueryBuilderFactory</code>. Il est à noter
+                que la requête construite retourne un ResultSet utilisant les alias
+                comme noms de colonnes.
+                Exemple :
+            </p>
+            <source>
+                <![CDATA[
+QueryBuilder builder = QueryBuilderFactory.newSelectQueryBuilder(config);
+
+// Création de la liste des colonnes utilisées
+DefaultFieldInfoList fieldList = new DefaultFieldInfoList();
+fieldList.add(new FieldInfo(new TableName("TAB_A")
+        , "SHARE_PRICE_ID", "alias_1"));
+fieldList.add(new FieldInfo(new TableName("TAB_B")
+        , "SHARE_PRICE_ID", "alias_2"));
+
+// Construction de la requête select.
+String monSelect = builder.buildQuery(fieldList);
+
+// Utilisation
+...
+ResultSet rs = statement.executeQuery(monSelect);
+...
+rs.getString("alias_1");
+                ]]>
+            </source>
+        </section>
+    </body>
+</document>

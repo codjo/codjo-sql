@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+     | POM Relationships
+     -->
+    <artifactId>codjo-sql-spy</artifactId>
+    <parent>
+        <groupId>net.codjo.sql</groupId>
+        <artifactId>codjo-sql</artifactId>
+        <version>2.40-SNAPSHOT</version>
+    </parent>
+    <dependencies>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!--
+    | Project Information
+    -->
+
+    <name>Lib &gt; SQL &gt; Spy</name>
+
+</project>

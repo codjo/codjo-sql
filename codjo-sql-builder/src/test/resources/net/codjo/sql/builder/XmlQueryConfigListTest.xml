@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<config-list xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="query-config.xsd">
+
+    <query-config id="config1" root="AP_ROOT">
+        <join-key left="AP_ROOT" type="inner" right="AP_A">
+            <part left="COL_R1" operator="=" right="COL_A1"/>
+        </join-key>
+        <join-key left="AP_A" type="left" right="AP_B">
+            <part left="COL_A1" operator="=" right="COL_B1"/>
+            <part left="COL_A2" operator="&lt;" right="COL_B2"/>
+        </join-key>
+        <join-key left="AP_C" type="right" right="AP_ROOT">
+            <part left="COL_C1" operator="&gt;=" right="COL_R1"/>
+        </join-key>
+    </query-config>
+
+    <query-config id="config2" root="AP_ROOT_2">
+        <join-key left="AP_ROOT_2" type="left" right="AP_T">
+            <part left="COL_R1" operator="=" right="COL_A1"/>
+        </join-key>
+    </query-config>
+
+    <query-config id="config3" root="AP_ROOT_3">
+        <!--join-key left="AP_ROOT_2" type="left" right="AP_T">
+            <part left="COL_R1" operator="=" right="COL_A1"/>
+        </join-key-->
+    </query-config>
+
+</config-list>

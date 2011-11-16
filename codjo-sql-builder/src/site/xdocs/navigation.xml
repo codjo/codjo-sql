@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<project name="sql-builder">
+    <title>sql-builder</title>
+    <body>
+        <links>
+            <item name="Bug" href="http://4ddev02/mantis"/>
+            <item name="Wiki" href="http://4ddev02/vqwiki/jsp/wiki.jsp?LibrairieSql"/>
+        </links>
+        <menu name="Overview">
+            <item name="Presentation" href="/index.html"/>
+            <item name="Historique" href="/changes-report.html"/>
+        </menu>
+    </body>
+</project>

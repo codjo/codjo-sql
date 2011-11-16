@@ -1,0 +1,19 @@
+net.codjo.sql.server
+	-> net.codjo.agent
+	-> net.codjo.database.common.api
+	-> net.codjo.database.common.api.structure
+	-> net.codjo.test.common
+	-> net.codjo.test.common.mock
+
+net.codjo.sql.server.util
+	-> org.mockito
+	-> org.mockito.internal.progress
+	-> org.mockito.internal.stubbing
+
+net.codjo.sql.server.plugin
+	-> net.codjo.agent
+	-> net.codjo.database.api
+	-> net.codjo.database.common.api
+	-> net.codjo.plugin.common
+	-> net.codjo.sql.server
+	-> net.codjo.test.common

@@ -1,0 +1,11 @@
+net.codjo.sql.server
+	-> net.codjo.agent
+
+net.codjo.sql.server.plugin
+	-> net.codjo.agent
+	-> net.codjo.database.api
+	-> net.codjo.database.common.api
+	-> net.codjo.plugin.common
+	-> net.codjo.sql.server
+
+net.codjo.sql.server.util

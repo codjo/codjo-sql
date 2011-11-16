@@ -1,0 +1,47 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+     | POM Relationships
+     -->
+
+    <parent>
+        <groupId>net.codjo.pom</groupId>
+        <artifactId>codjo-pom-library</artifactId>
+        <version>SNAPSHOT</version>
+    </parent>
+    <groupId>net.codjo.sql</groupId>
+    <artifactId>codjo-sql</artifactId>
+    <version>2.40-SNAPSHOT</version>
+
+    <!--
+    | Project Information
+    -->
+
+    <name>Lib &gt; SQL</name>
+    <description>Composant r�utilisable pour faciliter la gestion de requ�tes SQL.</description>
+    <inceptionYear>2003</inceptionYear>
+
+    <!--
+    | Build Settings
+    -->
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>codjo-sql-builder</module>
+        <module>codjo-sql-server</module>
+        <module>codjo-sql-spy</module>
+    </modules>
+
+    <!--
+    | Environment Information
+    -->
+
+    <scm>
+        <connection>scm:git:https://github.com/codjo/codjo-sql.git</connection>
+        <developerConnection>scm:git:https://github.com/codjo/codjo-sql.git</developerConnection>
+        <url>https://github.com/codjo/codjo-sql</url>
+    </scm>
+
+</project>

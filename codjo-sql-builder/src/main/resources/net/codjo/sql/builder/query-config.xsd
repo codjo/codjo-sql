@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:simpleType name="JoinKeyTypeType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="inner"/>
+            <xsd:enumeration value="left"/>
+            <xsd:enumeration value="right"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="PartOperatorType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="="/>
+            <xsd:enumeration value="!="/>
+            <xsd:enumeration value="&lt;&gt;"/>
+            <xsd:enumeration value="&lt;"/>
+            <xsd:enumeration value="&gt;"/>
+            <xsd:enumeration value="&lt;="/>
+            <xsd:enumeration value="&gt;="/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="PartType">
+        <xsd:attribute name="left" type="xsd:string"/>
+        <xsd:attribute name="operator" type="PartOperatorType"/>
+        <xsd:attribute name="right" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="JoinKeyType">
+        <xsd:sequence>
+            <xsd:element name="part" type="PartType" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="left" type="xsd:string"/>
+        <xsd:attribute name="type" type="JoinKeyTypeType"/>
+        <xsd:attribute name="right" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="QueryConfigType">
+        <xsd:sequence>
+            <xsd:element name="join-key" type="JoinKeyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="root" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="ConfigListType">
+        <xsd:sequence>
+            <xsd:element name="query-config" type="QueryConfigType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="config-list" type="ConfigListType"/>
+</xsd:schema>

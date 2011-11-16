@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document>
+    <properties>
+        <title>Changes</title>
+    </properties>
+    <body>
+        <release version="1.00" date="2004-07-22" description="Création">
+            <action dev="gonnot" type="add">
+               Création de la librairie 'builder' par extraction de agf-broadcast.
+            </action>
+        </release>
+    </body>
+</document>

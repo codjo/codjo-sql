@@ -94,7 +94,7 @@ public class ConnectionPoolTest extends TestCase {
             assertEquals("Pool has been shut down !", ex.getMessage());
         }
         try {
-            pool.releaseConnection(new ConnectionMock());
+            pool.releaseConnection(new ConnectionMock().getStub());
             fail();
         }
         catch (SQLException ex) {
@@ -107,7 +107,7 @@ public class ConnectionPoolTest extends TestCase {
                 public void close() throws SQLException {
                     throw new Error();
                 }
-            });
+            }.getStub());
             fail();
         }
         catch (SQLException ex) {
@@ -347,7 +347,7 @@ public class ConnectionPoolTest extends TestCase {
 
     public void test_releaseConnection_notAPoolConnection() throws SQLException {
         try {
-            pool.releaseConnection(new ConnectionMock());
+            pool.releaseConnection(new ConnectionMock().getStub());
             fail();
         }
         catch (IllegalArgumentException ex) {
@@ -361,7 +361,7 @@ public class ConnectionPoolTest extends TestCase {
 
         StatementMock statement = new StatementMock();
 
-        pool.releaseConnection(connection, statement);
+        pool.releaseConnection(connection, statement.getStub());
 
         assertEquals("close()", statement.callList());
         assertSame(connection, pool.getConnection());
@@ -379,7 +379,7 @@ public class ConnectionPoolTest extends TestCase {
         };
 
         try {
-            pool.releaseConnection(connection, dummyObject);
+            pool.releaseConnection(connection, dummyObject.getStub());
             fail();
         }
         catch (SQLException ex) {

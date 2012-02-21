@@ -34,7 +34,7 @@ public class ConnectionPoolMock extends ConnectionPool {
     public synchronized Connection getConnection() {
         logString.call("getConnection");
         if (getConnection == null) {
-            lastConnection = new ConnectionMock(new LogString("connection", logString));
+            lastConnection = new ConnectionMock(new LogString("connection", logString)).getStub();
         }
         else {
             lastConnection = getConnection;

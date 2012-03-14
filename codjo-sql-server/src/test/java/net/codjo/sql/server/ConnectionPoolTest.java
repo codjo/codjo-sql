@@ -4,6 +4,13 @@
  * Copyright (c) 2001 AGF Asset Management.
  */
 package net.codjo.sql.server;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+import junit.framework.TestCase;
 import net.codjo.database.common.api.ConnectionMetadata;
 import net.codjo.database.common.api.DatabaseFactory;
 import net.codjo.database.common.api.DatabaseHelper;
@@ -13,13 +20,6 @@ import net.codjo.database.common.api.JdbcFixtureUtil;
 import net.codjo.database.common.api.structure.SqlTable;
 import net.codjo.test.common.mock.ConnectionMock;
 import net.codjo.test.common.mock.StatementMock;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
-import junit.framework.TestCase;
 /**
  * Classe de test de {@link ConnectionPool}.
  */
@@ -310,8 +310,8 @@ public class ConnectionPoolTest extends TestCase {
         DatabaseHelper helper = new DatabaseFactory().createDatabaseHelper();
 
         Properties properties = new Properties();
-        properties.put("USER", metadata.getUser());
-        properties.put("PASSWORD", metadata.getPassword());
+        properties.put("user", metadata.getUser());
+        properties.put("password", metadata.getPassword());
 
         return new ConnectionPoolConfiguration(helper.getDriverClassName(),
                                                helper.getConnectionUrl(metadata),

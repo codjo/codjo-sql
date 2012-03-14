@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -23,33 +24,23 @@
         </dependency>
         <dependency>
             <groupId>net.codjo.database</groupId>
-            <artifactId>codjo-database-main</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.codjo.database</groupId>
             <artifactId>codjo-database-api</artifactId>
         </dependency>
         <dependency>
             <groupId>net.codjo.database</groupId>
-            <artifactId>codjo-database-hsqldb-api</artifactId>
+            <artifactId>codjo-database-${databaseType}-api</artifactId>
             <optional>true</optional>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>net.codjo.database</groupId>
-            <artifactId>codjo-database-mysql-api</artifactId>
-            <optional>true</optional>
-            <scope>test</scope>
+            <artifactId>codjo-database-common</artifactId>
         </dependency>
         <dependency>
             <groupId>net.codjo.database</groupId>
-            <artifactId>codjo-database-oracle-api</artifactId>
+            <artifactId>codjo-database-${databaseType}</artifactId>
             <optional>true</optional>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.codjo.database</groupId>
-            <artifactId>codjo-database-sybase-api</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>net.codjo.plugin</groupId>
@@ -75,6 +66,11 @@
             <artifactId>mockito</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <!--
@@ -82,7 +78,6 @@
     -->
 
     <name>Lib &gt; SQL &gt; Server</name>
-    <description>Couche serveur (plugin JDBC).</description>
+    <description>Server Layer (JDBC plugin).</description>
     <inceptionYear>2004</inceptionYear>
-
 </project>

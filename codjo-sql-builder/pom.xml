@@ -20,6 +20,11 @@
             <groupId>net.codjo.xml</groupId>
             <artifactId>codjo-xml</artifactId>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <!--
@@ -27,7 +32,7 @@
     -->
 
     <name>Lib &gt; SQL &gt; Builder</name>
-    <description>Permet de construire des requêtes SQL à partir de définitions de jointures.</description>
+    <description>Help to build SQL query from join definition.</description>
     <inceptionYear>2004</inceptionYear>
 
 

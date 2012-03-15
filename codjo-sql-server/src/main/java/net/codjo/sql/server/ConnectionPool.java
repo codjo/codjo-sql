@@ -20,9 +20,9 @@ import org.apache.log4j.Logger;
 /**
  * Manager of SQL connection.
  *
- * <p> Spool database connection in order to speed up process. A ConnectionPool is specific for one database
- * and one user. The Pool contains 2 kinds of list: one for all connections built by this manager, and another
- * for unused connection. </p>
+ * <p> Spool database connection in order to speed up process. A ConnectionPool is specific for one database and one
+ * user. The Pool contains 2 kinds of list: one for all connections built by this manager, and another for unused
+ * connection. </p>
  *
  * <p> This class is multi-thread safe. </p>
  */
@@ -256,6 +256,14 @@ public class ConnectionPool {
         ensurePoolNotShutDown();
 
         String driver = configuration.getClassDriver().toLowerCase();
+
+        // TODO : Hack pour gérer le cas du format des dates Oracle => upgrade du driver JDBC oracle, les dates
+        // TODO   sont condidérées comme des Timestamp
+        if (driver.contains("oracle")) {
+            configuration.getProperties().put("oracle.jdbc.mapDateToTimestamp", "false");
+        }
+        // TODO fin
+
         Connection con = DriverManager.getConnection(configuration.getUrl(), configuration.getProperties());
         if (con == null) {
             throw new NullPointerException("DriverManager retourne une connection null");
@@ -271,6 +279,7 @@ public class ConnectionPool {
             try {
                 statement = con.createStatement();
                 statement.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'");
+                statement.execute("ALTER SESSION SET CURRENT_SCHEMA=" + configuration.getCatalog());
             }
             finally {
                 if (statement != null) {
@@ -334,7 +343,7 @@ public class ConnectionPool {
         }
         long now = System.currentTimeMillis();
 
-        for (Iterator<Connection> iter = unusedConnections.iterator(); iter.hasNext();) {
+        for (Iterator<Connection> iter = unusedConnections.iterator(); iter.hasNext(); ) {
             Connection connection = iter.next();
             if (now >= lastReleasedTimes.get(connection) + configuration.getIdleConnectionTimeout()) {
                 iter.remove();

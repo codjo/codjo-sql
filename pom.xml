@@ -8,7 +8,7 @@
 
     <parent>
         <groupId>net.codjo.pom</groupId>
-        <artifactId>codjo-pom-library</artifactId>
+        <artifactId>codjo-pom-external</artifactId>
         <version>SNAPSHOT</version>
     </parent>
     <groupId>net.codjo.sql</groupId>
@@ -20,7 +20,7 @@
     -->
 
     <name>Lib &gt; SQL</name>
-    <description>Composant r�utilisable pour faciliter la gestion de requ�tes SQL.</description>
+    <description>Database component layer</description>
     <inceptionYear>2003</inceptionYear>
 
     <!--

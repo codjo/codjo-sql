@@ -261,6 +261,7 @@ public class ConnectionPool {
         // TODO   sont condidérées comme des Timestamp
         if (driver.contains("oracle")) {
             configuration.getProperties().put("oracle.jdbc.mapDateToTimestamp", "false");
+            configuration.getProperties().put("oracle.jdbc.J2EE13Compliant", "true");
         }
         // TODO fin
 

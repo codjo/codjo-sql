@@ -7,8 +7,7 @@ net.codjo.sql.server
 
 net.codjo.sql.server.util
 	-> org.mockito
-	-> org.mockito.internal.progress
-	-> org.mockito.internal.stubbing
+	-> org.mockito.stubbing
 
 net.codjo.sql.server.plugin
 	-> net.codjo.agent

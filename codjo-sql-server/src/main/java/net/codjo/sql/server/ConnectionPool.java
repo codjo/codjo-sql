@@ -279,6 +279,7 @@ public class ConnectionPool {
             Statement statement = null;
             try {
                 statement = con.createStatement();
+                statement.execute("ALTER SESSION SET NLS_TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
                 statement.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'");
                 statement.execute("ALTER SESSION SET CURRENT_SCHEMA=" + configuration.getCatalog());
             }

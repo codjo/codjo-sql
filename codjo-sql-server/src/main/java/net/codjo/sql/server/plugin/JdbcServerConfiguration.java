@@ -12,6 +12,7 @@ public class JdbcServerConfiguration {
     public static final String ENGINE_PARAMETER = "JDBCService.engine";
     static final String URL_PARAMETER = "JDBCService.url";
     static final String CATALOG_PARAMETER = "JDBCService.catalog";
+    public static final String LANGUAGE_PARAMETER = "JDBCService.language";
     static final String PLATFORM_ID = "platform-id";
     private ConnectionPoolConfiguration configuration = new ConnectionPoolConfiguration();
     private Engine engine = Engine.SYBASE;
@@ -82,6 +83,16 @@ public class JdbcServerConfiguration {
     }
 
 
+    public String getLanguage() {
+        return configuration.getLanguage();
+    }
+
+
+    public void setLanguage(String language) {
+        configuration.setLanguage(language);
+    }
+
+
     JdbcServerConfiguration merge(ContainerConfiguration containerConfiguration) throws JdbcServerException {
         JdbcServerConfiguration mergedConfig = new JdbcServerConfiguration();
 
@@ -109,6 +120,11 @@ public class JdbcServerConfiguration {
                                                containerConfiguration.getParameter(PLATFORM_ID));
         if (applicationName != null) {
             mergedConfig.setApplicationName(applicationName);
+        }
+        String language = selectNotNull(configuration.getLanguage(),
+                                               containerConfiguration.getParameter(LANGUAGE_PARAMETER));
+        if (language != null) {
+            mergedConfig.setLanguage(language);
         }
 
         return mergedConfig;

@@ -1,4 +1,5 @@
 package net.codjo.sql.server.plugin;
+import junit.framework.TestCase;
 import net.codjo.agent.ContainerConfiguration;
 import net.codjo.database.api.Engine;
 import net.codjo.database.common.api.DatabaseFactory;
@@ -6,7 +7,6 @@ import net.codjo.database.common.api.DatabaseHelper;
 import net.codjo.database.common.api.JdbcFixture;
 import net.codjo.sql.server.ConnectionPoolConfiguration;
 import net.codjo.sql.server.JdbcServerException;
-import junit.framework.TestCase;
 public class JdbcServerConfigurationTest extends TestCase {
     private JdbcServerConfiguration configuration = new JdbcServerConfiguration();
     private ContainerConfiguration containerConfiguration = new ContainerConfiguration();
@@ -42,25 +42,28 @@ public class JdbcServerConfigurationTest extends TestCase {
 
 
     public void test_merge() throws Exception {
-        fillJdbcServerConfiguration(driver, url, catalog, "application");
-        assertMergeResult(driver, url, catalog, "application");
+        fillJdbcServerConfiguration(driver, url, catalog, "application", "ENGLISH");
+        assertMergeResult(driver, url, catalog, "application", "ENGLISH");
 
         containerConfiguration.setParameter(JdbcServerConfiguration.DRIVER_PARAMETER, "fakedb.FakeDriver");
-        assertMergeResult("fakedb.FakeDriver", url, catalog, "application");
+        assertMergeResult("fakedb.FakeDriver", url, catalog, "application", "ENGLISH");
 
         containerConfiguration.setParameter(JdbcServerConfiguration.URL_PARAMETER, "overrided-url");
-        assertMergeResult("fakedb.FakeDriver", "overrided-url", catalog, "application");
+        assertMergeResult("fakedb.FakeDriver", "overrided-url", catalog, "application", "ENGLISH");
 
         containerConfiguration.setParameter(JdbcServerConfiguration.CATALOG_PARAMETER, "overrided-catalog");
-        assertMergeResult("fakedb.FakeDriver", "overrided-url", "overrided-catalog", "application");
+        assertMergeResult("fakedb.FakeDriver", "overrided-url", "overrided-catalog", "application", "ENGLISH");
 
         containerConfiguration.setParameter(JdbcServerConfiguration.PLATFORM_ID, "overrided-name");
-        assertMergeResult("fakedb.FakeDriver", "overrided-url", "overrided-catalog", "overrided-name");
+        assertMergeResult("fakedb.FakeDriver", "overrided-url", "overrided-catalog", "overrided-name", "ENGLISH");
+
+        containerConfiguration.setParameter(JdbcServerConfiguration.LANGUAGE_PARAMETER, "overrided-lang");
+        assertMergeResult("fakedb.FakeDriver", "overrided-url", "overrided-catalog", "overrided-name", "overrided-lang");
     }
 
 
     public void test_toConnectionPoolConfiguration_clone() throws Exception {
-        fillJdbcServerConfiguration(driver, url, catalog, "application");
+        fillJdbcServerConfiguration(driver, url, catalog, "application", "ENGLISH");
 
         ConnectionPoolConfiguration first = this.configuration.toConnectionPoolConfiguration();
         ConnectionPoolConfiguration second = this.configuration.toConnectionPoolConfiguration();
@@ -116,25 +119,28 @@ public class JdbcServerConfigurationTest extends TestCase {
     private void fillJdbcServerConfiguration(String aDriver,
                                              String anUrl,
                                              String aCatalog,
-                                             String applicationName) {
+                                             String applicationName,
+                                             String language) {
         configuration.setClassDriver(aDriver);
         configuration.setUrl(anUrl);
         configuration.setCatalog(aCatalog);
         configuration.setApplicationName(applicationName);
+        configuration.setLanguage(language);
     }
 
 
-    private void assertMergeResult(String aDriver, String anUrl, String aCatalog, String applicationName)
+    private void assertMergeResult(String aDriver, String anUrl, String aCatalog, String applicationName, String language)
           throws JdbcServerException {
         String initialDriver = configuration.getClassDriver();
         String initialUrl = configuration.getUrl();
         String initialCatalog = configuration.getCatalog();
         String initialApplicationName = configuration.getApplicationName();
+        String initialLanguage = configuration.getLanguage();
 
         JdbcServerConfiguration mergedConfig = configuration.merge(containerConfiguration);
 
-        assertConfig(mergedConfig, aDriver, anUrl, aCatalog, applicationName);
-        assertConfig(configuration, initialDriver, initialUrl, initialCatalog, initialApplicationName);
+        assertConfig(mergedConfig, aDriver, anUrl, aCatalog, applicationName,language);
+        assertConfig(configuration, initialDriver, initialUrl, initialCatalog, initialApplicationName, initialLanguage);
 
         ConnectionPoolConfiguration poolConfiguration = mergedConfig.toConnectionPoolConfiguration();
 
@@ -142,17 +148,19 @@ public class JdbcServerConfigurationTest extends TestCase {
         assertEquals(anUrl, poolConfiguration.getUrl());
         assertEquals(aCatalog, poolConfiguration.getCatalog());
         assertEquals(applicationName, poolConfiguration.getApplicationName());
+        assertEquals(language, poolConfiguration.getLanguage());
     }
 
 
     private void assertConfig(JdbcServerConfiguration mergedConfig, String aDriver,
                               String anUrl,
                               String aCatalog,
-                              String applicationName
-    ) {
+                              String applicationName,
+                              String language) {
         assertEquals(aDriver, mergedConfig.getClassDriver());
         assertEquals(anUrl, mergedConfig.getUrl());
         assertEquals(aCatalog, mergedConfig.getCatalog());
         assertEquals(applicationName, mergedConfig.getApplicationName());
+        assertEquals(language, mergedConfig.getLanguage());
     }
 }

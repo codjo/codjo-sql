@@ -80,7 +80,11 @@ public class ConnectionPoolConfigurationTest extends TestCase {
 
 
     public void test_language() throws Exception {
+        assertNull(configuration.getLanguage());
         assertEquals(FRENCH, configuration.getProperties().getProperty(LANGUAGE_KEY));
+        configuration.setLanguage("ENGLISH");
+        assertEquals("ENGLISH", configuration.getLanguage());
+        assertEquals("ENGLISH", configuration.getProperties().getProperty(LANGUAGE_KEY));
     }
 
 

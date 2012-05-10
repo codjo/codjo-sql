@@ -17,6 +17,7 @@ public class ConnectionPoolConfiguration implements Cloneable {
     private String classDriver;
     private String url;
     private String catalog;
+    private String language;
     private Properties properties;
     private long idleConnectionTimeout = 15000;
     private boolean automaticClose;
@@ -68,6 +69,17 @@ public class ConnectionPoolConfiguration implements Cloneable {
 
     public void setCatalog(String catalog) {
         this.catalog = catalog;
+    }
+
+
+    public String getLanguage() {
+        return language;
+    }
+
+
+    public void setLanguage(String language) {
+        this.language = language;
+        properties.setProperty(LANGUAGE_KEY, language);
     }
 
 

@@ -262,6 +262,7 @@ public class ConnectionPool {
         if (driver.contains("oracle")) {
             configuration.getProperties().put("oracle.jdbc.mapDateToTimestamp", "false");
             configuration.getProperties().put("oracle.jdbc.J2EE13Compliant", "true");
+            configuration.getProperties().put("v$session.machine", configuration.getHostname());
         }
         // TODO fin
 

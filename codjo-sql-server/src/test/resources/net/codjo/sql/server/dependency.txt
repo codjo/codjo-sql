@@ -1,5 +1,6 @@
 net.codjo.sql.server
 	-> net.codjo.agent
+	-> net.codjo.database.common.api
 
 net.codjo.sql.server.plugin
 	-> net.codjo.agent

@@ -1,17 +1,16 @@
 package net.codjo.sql.server;
+import java.util.Properties;
+import junit.framework.TestCase;
 import net.codjo.database.common.api.DatabaseFactory;
+import net.codjo.database.common.api.DatabaseHelper;
 import net.codjo.database.common.api.JdbcFixture;
+
+import static net.codjo.database.common.api.DatabaseHelper.LANGUAGE_KEY;
 import static net.codjo.sql.server.ConnectionPoolConfiguration.APPLICATIONNAME_KEY;
-import static net.codjo.sql.server.ConnectionPoolConfiguration.FRENCH;
 import static net.codjo.sql.server.ConnectionPoolConfiguration.HOSTNAME_KEY;
-import static net.codjo.sql.server.ConnectionPoolConfiguration.LANGUAGE_KEY;
-import static net.codjo.sql.server.ConnectionPoolConfiguration.PASSWORD_KEY;
 import static net.codjo.sql.server.ConnectionPoolConfiguration.SET_TRUNCATION_OFF;
 import static net.codjo.sql.server.ConnectionPoolConfiguration.SET_TRUNCATION_ON;
 import static net.codjo.sql.server.ConnectionPoolConfiguration.SQLINITSTRING_KEY;
-import static net.codjo.sql.server.ConnectionPoolConfiguration.USER_KEY;
-import java.util.Properties;
-import junit.framework.TestCase;
 public class ConnectionPoolConfigurationTest extends TestCase {
     private static final String STRING_WITH_30_CHARS = "123456789012345678901234567890";
     private JdbcFixture jdbc;
@@ -81,7 +80,6 @@ public class ConnectionPoolConfigurationTest extends TestCase {
 
     public void test_language() throws Exception {
         assertNull(configuration.getLanguage());
-        assertEquals(FRENCH, configuration.getProperties().getProperty(LANGUAGE_KEY));
         configuration.setLanguage("ENGLISH");
         assertEquals("ENGLISH", configuration.getLanguage());
         assertEquals("ENGLISH", configuration.getProperties().getProperty(LANGUAGE_KEY));
@@ -139,14 +137,14 @@ public class ConnectionPoolConfigurationTest extends TestCase {
     public void test_setUser() throws Exception {
         configuration.setUser("me");
         assertEquals("me", configuration.getUser());
-        assertEquals("me", configuration.getProperties().getProperty(USER_KEY));
+        assertEquals("me", configuration.getProperties().getProperty(DatabaseHelper.USER_KEY));
     }
 
 
     public void test_setPassword() throws Exception {
         configuration.setPassword("secret");
         assertEquals("secret", configuration.getPassword());
-        assertEquals("secret", configuration.getProperties().getProperty(PASSWORD_KEY));
+        assertEquals("secret", configuration.getProperties().getProperty(DatabaseHelper.PASSWORD_KEY));
     }
 
 

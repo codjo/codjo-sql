@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import net.codjo.database.common.api.DatabaseFactory;
 import org.apache.log4j.Logger;
 /**
  * Manager of SQL connection.
@@ -255,45 +256,9 @@ public class ConnectionPool {
     private void addNewConnection() throws SQLException {
         ensurePoolNotShutDown();
 
-        String driver = configuration.getClassDriver().toLowerCase();
+        Connection con = new DatabaseFactory().createDatabaseHelper().createConnection(configuration.getUrl(),
+                                                                                       configuration.getProperties());
 
-        // TODO : Hack pour gérer le cas du format des dates Oracle => upgrade du driver JDBC oracle, les dates
-        // TODO   sont condidérées comme des Timestamp
-        if (driver.contains("oracle")) {
-            configuration.getProperties().put("oracle.jdbc.mapDateToTimestamp", "false");
-            configuration.getProperties().put("oracle.jdbc.J2EE13Compliant", "true");
-            configuration.getProperties().put("v$session.machine", configuration.getHostname());
-        }
-        // TODO fin
-
-        Connection con = DriverManager.getConnection(configuration.getUrl(), configuration.getProperties());
-        if (con == null) {
-            throw new NullPointerException("DriverManager retourne une connection null");
-        }
-
-        if (configuration.getCatalog() != null) {
-            con.setCatalog(configuration.getCatalog());
-        }
-
-        // TODO : Hack pour gérer le cas du format des dates Oracle => à supprimer lors du chantier multibases
-        if (driver.contains("oracle")) {
-            Statement statement = null;
-            try {
-                statement = con.createStatement();
-                statement.execute("ALTER SESSION SET NLS_TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
-                statement.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'");
-                statement.execute("ALTER SESSION SET CURRENT_SCHEMA=" + configuration.getCatalog());
-                if (configuration.getLanguage() != null) {
-                    statement.execute("ALTER SESSION SET NLS_LANGUAGE= " + configuration.getLanguage());
-                }
-            }
-            finally {
-                if (statement != null) {
-                    statement.close();
-                }
-            }
-        }
-        // TODO fin
         allConnections.add(con);
         unusedConnections.add(con);
     }

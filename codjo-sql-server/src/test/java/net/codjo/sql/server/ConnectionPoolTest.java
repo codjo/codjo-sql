@@ -18,7 +18,6 @@ import net.codjo.database.common.api.JdbcFixture;
 import net.codjo.database.common.api.JdbcFixtureAdvanced;
 import net.codjo.database.common.api.JdbcFixtureUtil;
 import net.codjo.database.common.api.structure.SqlTable;
-import net.codjo.sql.server.plugin.JdbcServerConfiguration;
 import net.codjo.test.common.mock.ConnectionMock;
 import net.codjo.test.common.mock.StatementMock;
 /**

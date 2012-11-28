@@ -1,14 +1,15 @@
 package net.codjo.sql.server;
 import java.util.Properties;
+import net.codjo.database.common.api.DatabaseHelper;
+
+import static net.codjo.database.common.api.DatabaseHelper.CATALOG_KEY;
+import static net.codjo.database.common.api.DatabaseHelper.LANGUAGE_KEY;
 /**
  *
  */
 public class ConnectionPoolConfiguration implements Cloneable {
     static final String SQLINITSTRING_KEY = "SQLINITSTRING";
     static final String APPLICATIONNAME_KEY = "APPLICATIONNAME";
-    static final String LANGUAGE_KEY = "LANGUAGE";
-    static final String USER_KEY = "user";
-    static final String PASSWORD_KEY = "password";
     static final String HOSTNAME_KEY = "HOSTNAME";
 
     static final String SET_TRUNCATION_ON = "set arithabort numeric_truncation on";
@@ -40,9 +41,8 @@ public class ConnectionPoolConfiguration implements Cloneable {
                                        Properties properties,
                                        boolean numericTruncationWarning) {
         this.url = url;
-        this.catalog = catalog;
         this.properties = properties;
-        this.properties.put(LANGUAGE_KEY, FRENCH);
+        setCatalog(catalog);
         setClassDriver(classDriver);
         setNumericTruncationWarning(numericTruncationWarning);
         setAutomaticClose(true);
@@ -68,6 +68,12 @@ public class ConnectionPoolConfiguration implements Cloneable {
 
 
     public void setCatalog(String catalog) {
+        if (catalog == null) {
+            this.properties.remove(CATALOG_KEY);
+        }
+        else {
+            this.properties.put(CATALOG_KEY, catalog);
+        }
         this.catalog = catalog;
     }
 
@@ -188,22 +194,22 @@ public class ConnectionPoolConfiguration implements Cloneable {
 
 
     public void setUser(String user) {
-        getProperties().put(USER_KEY, user);
+        getProperties().put(DatabaseHelper.USER_KEY, user);
     }
 
 
     public String getUser() {
-        return getProperties().getProperty(USER_KEY);
+        return getProperties().getProperty(DatabaseHelper.USER_KEY);
     }
 
 
     public void setPassword(String password) {
-        getProperties().put(PASSWORD_KEY, password);
+        getProperties().put(DatabaseHelper.PASSWORD_KEY, password);
     }
 
 
     public String getPassword() {
-        return getProperties().getProperty(PASSWORD_KEY);
+        return getProperties().getProperty(DatabaseHelper.PASSWORD_KEY);
     }
 
 

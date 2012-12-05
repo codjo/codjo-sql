@@ -6,8 +6,7 @@ import net.codjo.database.common.api.DatabaseHelper;
 import net.codjo.database.common.api.JdbcFixture;
 import static net.codjo.sql.server.ConnectionPoolConfiguration.APPLICATIONNAME_KEY;
 import static net.codjo.sql.server.ConnectionPoolConfiguration.HOSTNAME_KEY;
-import static net.codjo.sql.server.ConnectionPoolConfiguration.PASSWORD_KEY;
-import static net.codjo.sql.server.ConnectionPoolConfiguration.USER_KEY;
+
 import java.sql.Connection;
 import java.util.Set;
 import junit.framework.TestCase;
@@ -99,8 +98,8 @@ public class JdbcManagerTest extends TestCase {
         assertEquals(getDriverClassName(), configuration.getClassDriver());
         assertEquals(getConnectionUrl(), configuration.getUrl());
         assertEquals(getCatalog(), configuration.getCatalog());
-        assertEquals(getJdbcUser(), configuration.getProperties().get(USER_KEY));
-        assertEquals(getJdbcPassword(), configuration.getProperties().get(PASSWORD_KEY));
+        assertEquals(getJdbcUser(), configuration.getProperties().get(DatabaseHelper.USER_KEY));
+        assertEquals(getJdbcPassword(), configuration.getProperties().get(DatabaseHelper.PASSWORD_KEY));
         assertEquals("userDicId", configuration.getProperties().get(HOSTNAME_KEY));
         assertEquals(STRING_WITH_30_CHARS, configuration.getProperties().getProperty(APPLICATIONNAME_KEY));
 
@@ -120,7 +119,7 @@ public class JdbcManagerTest extends TestCase {
         assertEquals(getDriverClassName(), configuration.getClassDriver());
         assertEquals(getConnectionUrl(), configuration.getUrl());
         assertEquals(getCatalog(), configuration.getCatalog());
-        assertEquals(getJdbcUser(), configuration.getProperties().get(USER_KEY));
+        assertEquals(getJdbcUser(), configuration.getProperties().get(DatabaseHelper.USER_KEY));
 
         assertSame(pool, jdbcManager.getPool(userId));
     }

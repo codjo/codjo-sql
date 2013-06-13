@@ -5,7 +5,6 @@
  */
 package net.codjo.sql.server;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -16,8 +15,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
-import net.codjo.database.common.api.DatabaseFactory;
+import net.codjo.database.common.api.JdbcLogUtil;
 import org.apache.log4j.Logger;
+
+import static org.apache.log4j.Level.ERROR;
 /**
  * Manager of SQL connection.
  *
@@ -36,6 +37,9 @@ public class ConnectionPool {
     private Timer timer;
     private boolean hasBeenShutdown = false;
 
+    private final ConnectionFactory connectionFactory;
+    private final String applicationUser;
+
 
     /**
      * Constructor for the ConnectionPool object.
@@ -50,12 +54,16 @@ public class ConnectionPool {
     @Deprecated
     protected ConnectionPool(String classDriver, String url, String catalog, Properties props)
           throws ClassNotFoundException {
-        this(new ConnectionPoolConfiguration(classDriver, url, catalog, props, false));
+        this(new ConnectionPoolConfiguration(classDriver, url, catalog, props, false),
+             new ConnectionFactoryConfiguration(), null);
     }
 
 
-    protected ConnectionPool(ConnectionPoolConfiguration configuration) {
+    protected ConnectionPool(ConnectionPoolConfiguration configuration, ConnectionFactoryConfiguration cfConfiguration,
+                             String applicationUser) {
         this.configuration = configuration;
+        this.connectionFactory = cfConfiguration.getConnectionFactory(applicationUser);
+        this.applicationUser = applicationUser;
         if (this.configuration.isAutomaticClose()) {
             initTimer();
         }
@@ -163,6 +171,11 @@ public class ConnectionPool {
     }
 
 
+    public String getApplicationUser() {
+        return applicationUser;
+    }
+
+
     /**
      * Release a connection (previously given by this manager).
      *
@@ -248,7 +261,7 @@ public class ConnectionPool {
 
 
     /**
-     * Adds a feature to the NewConnection attribute of the ConnectionPool object
+     * Creates a new {@link Connection} and add it to this pool.
      *
      * @throws SQLException         Erreur SQL
      * @throws NullPointerException Connection non disponible
@@ -256,8 +269,14 @@ public class ConnectionPool {
     private void addNewConnection() throws SQLException {
         ensurePoolNotShutDown();
 
-        Connection con = new DatabaseFactory().createDatabaseHelper().createConnection(configuration.getUrl(),
-                                                                                       configuration.getProperties());
+        Connection con;
+        try {
+            con = connectionFactory.createConnection(configuration, applicationUser);
+        }
+        catch (SQLException e) {
+            JdbcLogUtil.logWarningsAndError(LOG, ERROR, e);
+            throw e;
+        }
 
         allConnections.add(con);
         unusedConnections.add(con);

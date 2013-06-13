@@ -15,6 +15,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
+import net.codjo.util.time.SystemTimeSource;
+import net.codjo.util.time.TimeSource;
 import org.apache.log4j.Logger;
 
 public class PreparedStatementSpy extends PreparedStatementDecorator {
@@ -23,9 +25,18 @@ public class PreparedStatementSpy extends PreparedStatementDecorator {
     private ConnectionSpy connectionSpy;
     private String prepareQuery;
     private String[] parameters;
+    private final TimeSource timeSource;
 
 
     public PreparedStatementSpy(PreparedStatement statement, String query, ConnectionSpy connectionSpy) {
+        this(statement, query, connectionSpy, null);
+    }
+
+
+    public PreparedStatementSpy(PreparedStatement statement,
+                                String query,
+                                ConnectionSpy connectionSpy,
+                                TimeSource timeSource) {
         super(statement);
         this.prepareQuery = query;
         this.connectionSpy = connectionSpy;
@@ -34,6 +45,8 @@ public class PreparedStatementSpy extends PreparedStatementDecorator {
         if (nbParams > 0) {
             parameters = new String[nbParams];
         }
+
+        this.timeSource = SystemTimeSource.defaultIfNull(timeSource);
     }
 
 
@@ -42,12 +55,12 @@ public class PreparedStatementSpy extends PreparedStatementDecorator {
         if (connectionSpy.shouldDisplayQuery()) {
             LOGGER.info("$$.prepared.executeQuery(" + builtQuery().replaceAll("\n", " ") + ")");
         }
-        long start = System.currentTimeMillis();
+        long start = timeSource.getTime();
         try {
             return super.executeQuery();
         }
         finally {
-            connectionSpy.getPreparedStatement(prepareQuery).addTime(System.currentTimeMillis() - start);
+            connectionSpy.getPreparedStatement(prepareQuery).addTime(timeSource.getTime() - start);
         }
     }
 
@@ -57,12 +70,12 @@ public class PreparedStatementSpy extends PreparedStatementDecorator {
         if (connectionSpy.shouldDisplayQuery()) {
             LOGGER.info("$$.prepared.executeUpdate(" + builtQuery().replaceAll("\n", " ") + ")");
         }
-        long start = System.currentTimeMillis();
+        long start = timeSource.getTime();
         try {
             return super.executeUpdate();
         }
         finally {
-            connectionSpy.getPreparedStatement(prepareQuery).addTime(System.currentTimeMillis() - start);
+            connectionSpy.getPreparedStatement(prepareQuery).addTime(timeSource.getTime() - start);
         }
     }
 
@@ -72,12 +85,12 @@ public class PreparedStatementSpy extends PreparedStatementDecorator {
         if (connectionSpy.shouldDisplayQuery()) {
             LOGGER.info("$$.prepared.execute(" + builtQuery().replaceAll("\n", " ") + ")");
         }
-        long start = System.currentTimeMillis();
+        long start = timeSource.getTime();
         try {
             return super.execute();
         }
         finally {
-            connectionSpy.getPreparedStatement(prepareQuery).addTime(System.currentTimeMillis() - start);
+            connectionSpy.getPreparedStatement(prepareQuery).addTime(timeSource.getTime() - start);
         }
     }
 

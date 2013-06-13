@@ -15,6 +15,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
+import net.codjo.util.time.SystemTimeSource;
+import net.codjo.util.time.TimeSource;
 import org.apache.log4j.Logger;
 
 public class CallableStatementSpy extends CallableStatementDecorator {
@@ -23,11 +25,19 @@ public class CallableStatementSpy extends CallableStatementDecorator {
     private ConnectionSpy connectionSpy;
     private String prepareQuery;
     private String[] parameters;
+    private final TimeSource timeSource;
 
 
     public CallableStatementSpy(CallableStatement statement,
                                 String prepareQuery,
                                 ConnectionSpy connectionSpy) {
+        this(statement, prepareQuery, connectionSpy, null);
+    }
+
+
+    public CallableStatementSpy(CallableStatement statement,
+                                String prepareQuery,
+                                ConnectionSpy connectionSpy, TimeSource timeSource) {
         super(statement);
         this.prepareQuery = prepareQuery;
         this.connectionSpy = connectionSpy;
@@ -36,6 +46,8 @@ public class CallableStatementSpy extends CallableStatementDecorator {
         if (nbParams > 0) {
             parameters = new String[nbParams];
         }
+
+        this.timeSource = SystemTimeSource.defaultIfNull(timeSource);
     }
 
 
@@ -44,12 +56,12 @@ public class CallableStatementSpy extends CallableStatementDecorator {
         if (connectionSpy.shouldDisplayQuery()) {
             LOGGER.info("$$.callable.execute(" + builtQuery().replaceAll("\n", " ") + ")");
         }
-        long start = System.currentTimeMillis();
+        long start = timeSource.getTime();
         try {
             return super.executeQuery();
         }
         finally {
-            connectionSpy.getPreparedCall(prepareQuery).addTime(System.currentTimeMillis() - start);
+            connectionSpy.getPreparedCall(prepareQuery).addTime(timeSource.getTime() - start);
         }
     }
 

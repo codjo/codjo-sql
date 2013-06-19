@@ -20,6 +20,14 @@ import net.codjo.database.common.api.JdbcFixtureUtil;
 import net.codjo.database.common.api.structure.SqlTable;
 import net.codjo.test.common.mock.ConnectionMock;
 import net.codjo.test.common.mock.StatementMock;
+
+import static net.codjo.sql.server.ConnectionFactoryConfigurationTest.USER1;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 /**
  * Classe de test de {@link ConnectionPool}.
  */
@@ -32,7 +40,7 @@ public class ConnectionPoolTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         jdbc = new DatabaseFactory().createJdbcFixture();
-        pool = createConnectionPool(false);
+        pool = createConnectionPool(false, new ConnectionFactoryConfiguration(), USER1);
     }
 
 
@@ -48,7 +56,7 @@ public class ConnectionPoolTest extends TestCase {
         ConnectionPoolConfiguration configuration = createConfiguration(false);
         configuration.setAutomaticClose(false);
 
-        pool = new ConnectionPool(configuration);
+        pool = new ConnectionPool(configuration, new ConnectionFactoryConfiguration(), USER1);
 
         assertSame(configuration, pool.getConfiguration());
     }
@@ -231,7 +239,7 @@ public class ConnectionPoolTest extends TestCase {
 
     public void test_insert_withNumericTruncationWarning() throws Exception {
         pool.closeAllConnections();
-        pool = createConnectionPool(true);
+        pool = createConnectionPool(true, new ConnectionFactoryConfiguration(), USER1);
 
         Connection connection = pool.getConnection();
         JdbcFixture fixture = getJdbcFixture(connection);
@@ -286,22 +294,24 @@ public class ConnectionPoolTest extends TestCase {
         pool.releaseConnection(pool.getConnection());
         pool.closeAllConnections();
 
-        ConnectionPool otherConnectionPool = createConnectionPool(false);
+        ConnectionPool otherConnectionPool = createConnectionPool(false, new ConnectionFactoryConfiguration(), USER1);
         otherConnectionPool.releaseConnection(otherConnectionPool.getConnection());
         pool.closeAllConnections();
         otherConnectionPool.closeAllConnections();
     }
 
 
-    private ConnectionPool createConnectionPool(boolean numericTruncationWarning) {
-        return new ConnectionPool(createConfiguration(numericTruncationWarning));
+    private ConnectionPool createConnectionPool(boolean numericTruncationWarning,
+                                                ConnectionFactoryConfiguration cfConfiguration,
+                                                String login) {
+        return new ConnectionPool(createConfiguration(numericTruncationWarning), cfConfiguration, login);
     }
 
 
     private ConnectionPool createConnectionPoolWithoutAutomaticClose() {
         ConnectionPoolConfiguration configuration = createConfiguration(false);
         configuration.setAutomaticClose(false);
-        return new ConnectionPool(configuration);
+        return new ConnectionPool(configuration, new ConnectionFactoryConfiguration(), USER1);
     }
 
 
@@ -405,6 +415,56 @@ public class ConnectionPoolTest extends TestCase {
     public void test_fillPool() throws SQLException {
         pool.fillPool(1);
         assertEquals(1, pool.getAllConnectionsSize());
+    }
+
+
+    public void test_ConnectionFactory_allUsers() throws SQLException {
+        test_UserConnectionFactory(true);
+    }
+
+
+    public void test_ConnectionFactory_user() throws SQLException {
+        test_UserConnectionFactory(false);
+    }
+
+
+    private void test_UserConnectionFactory(boolean allUsers) throws SQLException {
+        ConnectionFactory mockConnectionFactory = mock(ConnectionFactory.class);
+        Connection mockConnection = mock(Connection.class);
+        when(mockConnectionFactory.createConnection(any(ConnectionPoolConfiguration.class), eq(USER1))).thenReturn(
+              mockConnection);
+
+        ConnectionFactoryConfiguration cfConfiguration = new ConnectionFactoryConfiguration();
+        if (allUsers) {
+            cfConfiguration.setDefaultConnectionFactory(mockConnectionFactory);
+        }
+        else {
+            cfConfiguration.setConnectionFactory(USER1, mockConnectionFactory);
+        }
+
+        Connection connection = test_ConnectionFactory(USER1, cfConfiguration, mockConnectionFactory.getClass());
+
+        verify(mockConnectionFactory, times(1)).createConnection(any(ConnectionPoolConfiguration.class),
+                                                                 eq(USER1));
+        assertEquals("Connection returned by factory is not used", mockConnection, connection);
+    }
+
+
+    private Connection test_ConnectionFactory(String login,
+                                              ConnectionFactoryConfiguration cfConfiguration,
+                                              Class<? extends ConnectionFactory> expectedConnectionFactory)
+          throws SQLException {
+        pool.closeAllConnections();
+
+        ConnectionFactory factory = cfConfiguration.getConnectionFactory(login);
+        assertEquals("wrong actual ConnectionFactory class",
+                     expectedConnectionFactory,
+                     (factory == null) ? null : factory.getClass());
+
+        pool = createConnectionPool(true, cfConfiguration, login);
+        Connection connection = pool.getConnection();
+
+        return connection;
     }
 
 

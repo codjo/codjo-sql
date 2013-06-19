@@ -4,11 +4,13 @@
  * Copyright (c) 2001 AGF Asset Management.
  */
 package net.codjo.sql.server;
-import net.codjo.test.common.LogString;
-import net.codjo.test.common.mock.ConnectionMock;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import net.codjo.test.common.LogString;
+import net.codjo.test.common.mock.ConnectionMock;
+
+import static net.codjo.sql.server.ConnectionFactoryConfigurationTest.USER1;
 /**
  * Classe de mock de {@link ConnectionPool}.
  */
@@ -20,7 +22,7 @@ public class ConnectionPoolMock extends ConnectionPool {
 
 
     public ConnectionPoolMock(LogString logString) throws ClassNotFoundException {
-        super(new ConnectionPoolConfiguration());
+        super(new ConnectionPoolConfiguration(), new ConnectionFactoryConfiguration(), USER1);
         this.logString = logString;
     }
 

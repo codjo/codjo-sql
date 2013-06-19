@@ -1,15 +1,21 @@
 package net.codjo.sql.server;
+import java.sql.Connection;
+import java.util.Set;
+import junit.framework.TestCase;
 import net.codjo.agent.UserId;
 import net.codjo.database.common.api.ConnectionMetadata;
 import net.codjo.database.common.api.DatabaseFactory;
 import net.codjo.database.common.api.DatabaseHelper;
 import net.codjo.database.common.api.JdbcFixture;
+
 import static net.codjo.sql.server.ConnectionPoolConfiguration.APPLICATIONNAME_KEY;
 import static net.codjo.sql.server.ConnectionPoolConfiguration.HOSTNAME_KEY;
-
-import java.sql.Connection;
-import java.util.Set;
-import junit.framework.TestCase;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 public class JdbcManagerTest extends TestCase {
     private static final String STRING_WITH_30_CHARS = "123456789012345678901234567890";
     private static final String DRIVER_SYBASE = "com.sybase.jdbc2.jdbc.SybDriver";
@@ -196,6 +202,89 @@ public class JdbcManagerTest extends TestCase {
         assertTrue(userIds.contains(otherUserId));
 
         assertNotSame(jdbcManager.getUserIds(), jdbcManager.getUserIds());
+    }
+
+
+    public void test_defaultConnectionFactory() throws Exception {
+        createJdbcManager();
+
+        assertEquals(0, jdbcManager.getUserIds().size());
+    }
+
+
+    public void testAddConnectionPoolListener_singleListener() throws Exception {
+        doTestAddConnectionPoolListener(null);
+    }
+
+
+    public void testAddConnectionPoolListener_duplicateListener() throws Exception {
+        ConnectionPoolListener listener = doTestAddConnectionPoolListener(null).listener;
+
+        // add the listener again
+        doTestAddConnectionPoolListener(listener);
+    }
+
+
+    public void testRemoveConnectionPoolListener() throws Exception {
+        // preparation
+        ListenerTestResult addResult = doTestAddConnectionPoolListener(null);
+
+        // test
+        jdbcManager.removeConnectionPoolListener(addResult.listener);
+        reset(addResult.listener); // clear call history for mock
+        ConnectionPool pool = createAndDestroyPool(null);
+
+        // verifications
+        verify(addResult.listener, never()).poolCreated(eq(pool));
+        verify(addResult.listener, never()).poolDestroyed(eq(pool));
+    }
+
+
+    private ListenerTestResult doTestAddConnectionPoolListener(ConnectionPoolListener listener) throws Exception {
+        if (listener == null) {
+            listener = mock(ConnectionPoolListener.class);
+        }
+
+        ConnectionPool pool = createAndDestroyPool(listener);
+
+        verify(listener, times(1)).poolCreated(eq(pool));
+        verify(listener, times(1)).poolDestroyed(eq(pool));
+
+        return new ListenerTestResult(pool, listener);
+    }
+
+
+    private ConnectionPool createAndDestroyPool(ConnectionPoolListener listener) throws Exception {
+        if (jdbcManager == null) {
+            createJdbcManager();
+        }
+
+        if (listener != null) {
+            jdbcManager.addConnectionPoolListener(listener);
+        }
+
+        UserId userId = UserId.createId("user", "secret");
+
+        ConnectionPool pool;
+        try {
+            pool = jdbcManager.createPool(userId, getJdbcUser(), getJdbcPassword());
+        }
+        finally {
+            jdbcManager.destroyPool(userId);
+        }
+        return pool;
+    }
+
+
+    private static class ListenerTestResult {
+        private final ConnectionPool pool;
+        private final ConnectionPoolListener listener;
+
+
+        public ListenerTestResult(ConnectionPool pool, ConnectionPoolListener listener) {
+            this.pool = pool;
+            this.listener = listener;
+        }
     }
 
 

@@ -4,6 +4,8 @@ net.codjo.sql.server
 	-> net.codjo.database.common.api.structure
 	-> net.codjo.test.common
 	-> net.codjo.test.common.mock
+	-> org.mockito
+	-> org.mockito.stubbing
 
 net.codjo.sql.server.util
 	-> org.mockito

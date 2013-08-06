@@ -12,11 +12,15 @@ import org.apache.log4j.Logger;
  * Service permettant l'accès à une base de données.
  */
 public class JdbcManager {
+    private static final String ALL_USERS = "ALL_USERS";
+    private static final int TYPICAL_LISTENERS_PER_USER = 2;
+
     private final Logger logger = Logger.getLogger(JdbcManager.class.getName());
     private final Object lock = new Object();
     private final Map<UserId, ConnectionPool> poolMap = new HashMap<UserId, ConnectionPool>();
     private final ConnectionPoolConfiguration poolConfigurationPrototype;
-    private final List<ConnectionPoolListener> poolListeners = new ArrayList<ConnectionPoolListener>(2);
+    private final Map<String, List<ConnectionPoolListener>> poolListeners
+          = new HashMap<String, List<ConnectionPoolListener>>();
 
     static final int DEFAULT_POOL_SIZE = 1;
 
@@ -112,31 +116,50 @@ public class JdbcManager {
     }
 
 
+    /**
+     * Clear all {@link ConnectionPoolListener}s.
+     */
+    public void clearConnectionPoolListeners() {
+        poolListeners.clear();
+    }
+
+
+    /**
+     * Add a {@link ConnectionPoolListener} for all users.
+     */
     public void addConnectionPoolListener(ConnectionPoolListener l) {
+        addConnectionPoolListener(l, null);
+    }
+
+
+    /**
+     * Add a {@link ConnectionPoolListener} for a given user.
+     */
+    public void addConnectionPoolListener(ConnectionPoolListener l, String user) {
+        user = (user == null) ? ALL_USERS : user;
+
         synchronized (poolListeners) {
-            if (!poolListeners.contains(l)) {
-                poolListeners.add(l);
+            List<ConnectionPoolListener> listeners = poolListeners.get(user);
+            if (listeners == null) {
+                listeners = new ArrayList<ConnectionPoolListener>(TYPICAL_LISTENERS_PER_USER);
+                poolListeners.put(user, listeners);
+            }
+            if (!listeners.contains(l)) {
+                listeners.add(l);
             }
         }
     }
 
 
-    public void removeConnectionPoolListener(ConnectionPoolListener l) {
-        synchronized (poolListeners) {
-            poolListeners.remove(l);
-        }
-    }
-
-
     private void firePoolCreated(ConnectionPool pool) {
-        for (ConnectionPoolListener l : cloneListenerList()) {
+        for (ConnectionPoolListener l : cloneListenerList(pool.getApplicationUser())) {
             l.poolCreated(pool);
         }
     }
 
 
     private void firePoolDestroyed(ConnectionPool pool) {
-        for (ConnectionPoolListener l : cloneListenerList()) {
+        for (ConnectionPoolListener l : cloneListenerList(pool.getApplicationUser())) {
             l.poolDestroyed(pool);
         }
     }
@@ -145,11 +168,35 @@ public class JdbcManager {
     /**
      * Get a copy of {#poolListeners} to avoid concurrency issues and minimize lock on it.
      */
-    private List<ConnectionPoolListener> cloneListenerList() {
-        List<ConnectionPoolListener> list;
+    private List<ConnectionPoolListener> cloneListenerList(String applicationUser) {
+        List<ConnectionPoolListener> list = new ArrayList<ConnectionPoolListener>(2 * TYPICAL_LISTENERS_PER_USER);
+
         synchronized (poolListeners) {
-            list = new ArrayList<ConnectionPoolListener>(poolListeners);
+            List<ConnectionPoolListener> listeners = poolListeners.get(applicationUser);
+            if (listeners != null) {
+                list.addAll(listeners);
+            }
+
+            listeners = poolListeners.get(ALL_USERS);
+            if (listeners != null) {
+                list.addAll(listeners);
+            }
         }
+
         return list;
+    }
+
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("JdbcManager");
+        sb.append("{lock=").append(lock);
+        sb.append(", poolMap=").append(poolMap);
+        sb.append(", poolConfigurationPrototype=").append(poolConfigurationPrototype);
+        sb.append(", poolListeners=").append(poolListeners);
+        sb.append(", connectionFactoryConfiguration=").append(connectionFactoryConfiguration);
+        sb.append('}');
+        return sb.toString();
     }
 }

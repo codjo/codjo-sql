@@ -1,5 +1,6 @@
 package net.codjo.sql.server;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Set;
 import junit.framework.TestCase;
 import net.codjo.agent.UserId;
@@ -212,27 +213,33 @@ public class JdbcManagerTest extends TestCase {
     }
 
 
-    public void testAddConnectionPoolListener_singleListener() throws Exception {
-        doTestAddConnectionPoolListener(null);
+    public void testAddConnectionPoolListener_singleListener_allUsers() throws Exception {
+        doTestAddConnectionPoolListener(null, true); // allUsers=true
+    }
+
+
+    public void testAddConnectionPoolListener_singleListener_singleUser() throws Exception {
+        doTestAddConnectionPoolListener(null, false); // allUsers=false
     }
 
 
     public void testAddConnectionPoolListener_duplicateListener() throws Exception {
-        ConnectionPoolListener listener = doTestAddConnectionPoolListener(null).listener;
+        boolean allUsers = true;
+        ConnectionPoolListener listener = doTestAddConnectionPoolListener(null, allUsers).listener;
 
         // add the listener again
-        doTestAddConnectionPoolListener(listener);
+        doTestAddConnectionPoolListener(listener, allUsers);
     }
 
 
-    public void testRemoveConnectionPoolListener() throws Exception {
+    public void testClearConnectionPoolListeners() throws Exception {
         // preparation
-        ListenerTestResult addResult = doTestAddConnectionPoolListener(null);
+        ListenerTestResult addResult = doTestAddConnectionPoolListener(null, true); //allUsers=true
 
         // test
-        jdbcManager.removeConnectionPoolListener(addResult.listener);
+        jdbcManager.clearConnectionPoolListeners();
         reset(addResult.listener); // clear call history for mock
-        ConnectionPool pool = createAndDestroyPool(null);
+        ConnectionPool pool = createAndDestroyPool(null, true)[0]; // allUsers=true
 
         // verifications
         verify(addResult.listener, never()).poolCreated(eq(pool));
@@ -240,49 +247,68 @@ public class JdbcManagerTest extends TestCase {
     }
 
 
-    private ListenerTestResult doTestAddConnectionPoolListener(ConnectionPoolListener listener) throws Exception {
+    private ListenerTestResult doTestAddConnectionPoolListener(ConnectionPoolListener listener, boolean allUsers)
+          throws Exception {
         if (listener == null) {
             listener = mock(ConnectionPoolListener.class);
         }
 
-        ConnectionPool pool = createAndDestroyPool(listener);
+        ConnectionPool[] pools = createAndDestroyPool(listener, allUsers);
 
-        verify(listener, times(1)).poolCreated(eq(pool));
-        verify(listener, times(1)).poolDestroyed(eq(pool));
+        verify(listener, times(1)).poolCreated(eq(pools[0]));
+        verify(listener, times(1)).poolDestroyed(eq(pools[0]));
 
-        return new ListenerTestResult(pool, listener);
+        if (allUsers) {
+            verify(listener, times(1)).poolCreated(eq(pools[1]));
+            verify(listener, times(1)).poolDestroyed(eq(pools[1]));
+        }
+        else {
+            verify(listener, never()).poolCreated(eq(pools[1]));
+            verify(listener, never()).poolDestroyed(eq(pools[1]));
+        }
+
+        return new ListenerTestResult(pools, listener);
     }
 
 
-    private ConnectionPool createAndDestroyPool(ConnectionPoolListener listener) throws Exception {
+    private ConnectionPool[] createAndDestroyPool(ConnectionPoolListener listener, boolean allUsers) throws Exception {
         if (jdbcManager == null) {
             createJdbcManager();
         }
 
+        UserId userId = UserId.createId("user", "secret");
+        UserId userId2 = UserId.createId("user2", "secret2");
+
         if (listener != null) {
-            jdbcManager.addConnectionPoolListener(listener);
+            if (allUsers) {
+                jdbcManager.addConnectionPoolListener(listener);
+            }
+            else {
+                jdbcManager.addConnectionPoolListener(listener, userId.getLogin());
+            }
         }
 
-        UserId userId = UserId.createId("user", "secret");
+        return new ConnectionPool[]{createAndDestroyPool(userId), createAndDestroyPool(userId2)};
+    }
 
-        ConnectionPool pool;
+
+    private ConnectionPool createAndDestroyPool(UserId userId) throws SQLException {
         try {
-            pool = jdbcManager.createPool(userId, getJdbcUser(), getJdbcPassword());
+            return jdbcManager.createPool(userId, getJdbcUser(), getJdbcPassword());
         }
         finally {
             jdbcManager.destroyPool(userId);
         }
-        return pool;
     }
 
 
     private static class ListenerTestResult {
-        private final ConnectionPool pool;
+        private final ConnectionPool[] pools;
         private final ConnectionPoolListener listener;
 
 
-        public ListenerTestResult(ConnectionPool pool, ConnectionPoolListener listener) {
-            this.pool = pool;
+        public ListenerTestResult(ConnectionPool[] pools, ConnectionPoolListener listener) {
+            this.pools = pools;
             this.listener = listener;
         }
     }

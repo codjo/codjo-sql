@@ -6,8 +6,8 @@ import net.codjo.util.time.TimeSource;
 import org.junit.Before;
 import org.junit.Test;
 
-import static net.codjo.sql.spy.stats.Statistics.max;
-import static net.codjo.sql.spy.stats.Statistics.min;
+import static net.codjo.util.time.SimpleStatistics.max;
+import static net.codjo.util.time.SimpleStatistics.min;
 
 /**
  * Test for class {@link net.codjo.sql.spy.ConnectionSpy.OneQuery}.
@@ -29,9 +29,9 @@ public class OneQueryTest extends TestCase {
 
 
     @Test
-    public void testGetTime() {
+    public void testGetTotalTime() {
         OneQuery oneQuery = new OneQuery("query", timeSource);
-        assertEquals(0, oneQuery.getTime());
+        assertEquals(0, oneQuery.getTotalTime());
     }
 
 
@@ -46,7 +46,7 @@ public class OneQueryTest extends TestCase {
         assertNotSame(result, oneQuery1);
         assertNotSame(result, oneQuery2);
 
-        assertEquals(oneQuery1.getTime() + oneQuery2.getTime(), result.getTime());
+        assertEquals(oneQuery1.getTotalTime() + oneQuery2.getTotalTime(), result.getTotalTime());
         assertEquals(min(oneQuery1.getMinTime(), oneQuery2.getMinTime()), result.getMinTime());
         assertEquals(max(oneQuery1.getMaxTime(), oneQuery2.getMaxTime()), result.getMaxTime());
         assertEquals(oneQuery1.getCount() + oneQuery2.getCount(), result.getCount());

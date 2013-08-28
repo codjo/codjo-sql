@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import net.codjo.sql.spy.stats.Statistics;
+import net.codjo.util.time.SimpleStatistics;
+import net.codjo.util.time.Statistics;
+import net.codjo.util.time.StatisticsOwner;
 import net.codjo.util.time.SystemTimeSource;
 import net.codjo.util.time.TimeSource;
 import org.apache.log4j.Logger;
@@ -123,13 +125,13 @@ public class ConnectionSpy extends ConnectionDecorator {
         LOGGER.info(" - prepared calls : " + preparedCallCount);
         LOGGER.info("");
         LOGGER.info("Execution time : " +
-                    (sumTime(createdStatements)
-                     + sumTime(preparedStatements)
-                     + sumTime(preparedCalls)) / 1000.0 + "s");
+                    (sumTotalTime(createdStatements)
+                     + sumTotalTime(preparedStatements)
+                     + sumTotalTime(preparedCalls)) / 1000.0 + "s");
         LOGGER.info("Details :");
-        LOGGER.info(" - created statements : " + sumTime(createdStatements) / 1000.0 + "s");
-        LOGGER.info(" - prepared statements : " + sumTime(preparedStatements) / 1000.0 + "s");
-        LOGGER.info(" - prepared calls : " + sumTime(preparedCalls) / 1000.0 + "s");
+        LOGGER.info(" - created statements : " + sumTotalTime(createdStatements) / 1000.0 + "s");
+        LOGGER.info(" - prepared statements : " + sumTotalTime(preparedStatements) / 1000.0 + "s");
+        LOGGER.info(" - prepared calls : " + sumTotalTime(preparedCalls) / 1000.0 + "s");
         LOGGER.info("");
         LOGGER.info("Queries :");
         LOGGER.info(" - created statements : " + createdStatements.size());
@@ -145,7 +147,6 @@ public class ConnectionSpy extends ConnectionDecorator {
         if (!collection.containsKey(sql)) {
             collection.put(sql, new OneQuery(sql, timeSource));
         }
-        collection.get(sql).inc();
     }
 
 
@@ -156,25 +157,25 @@ public class ConnectionSpy extends ConnectionDecorator {
     }
 
 
-    private long sumTime(Map<String, OneQuery> map) {
-        Statistics stats = OneQuery.aggregate(map.values());
-        return stats.getTime();
+    private long sumTotalTime(Map<String, OneQuery> map) {
+        Statistics stats = SimpleStatistics.aggregate(map.values());
+        return stats.getTotalTime();
     }
 
 
-    public static class OneQuery {
+    public static class OneQuery implements StatisticsOwner {
         long when;
-        private final Statistics statistics;
+        private final SimpleStatistics statistics;
         String sql;
         final TimeSource timeSource;
 
 
         public OneQuery(String sql, TimeSource timeSource) {
-            this(sql, timeSource, new Statistics());
+            this(sql, timeSource, new SimpleStatistics());
         }
 
 
-        private OneQuery(String sql, TimeSource timeSource, Statistics statistics) {
+        private OneQuery(String sql, TimeSource timeSource, SimpleStatistics statistics) {
             this.sql = sql.replaceAll("\n", " ");
             this.timeSource = SystemTimeSource.defaultIfNull(timeSource);
             this.when = this.timeSource.getTime();
@@ -192,8 +193,8 @@ public class ConnectionSpy extends ConnectionDecorator {
         }
 
 
-        public long getTime() {
-            return statistics.getTime();
+        public long getTotalTime() {
+            return statistics.getTotalTime();
         }
 
 
@@ -212,19 +213,8 @@ public class ConnectionSpy extends ConnectionDecorator {
         }
 
 
-        public static Statistics aggregate(Iterable<OneQuery> queries) {
-            Statistics result = new Statistics();
-            if (queries != null) {
-                for (OneQuery query : queries) {
-                    result.add(query.statistics);
-                }
-            }
-            return result;
-        }
-
-
         public OneQuery aggregate(OneQuery other) {
-            Statistics stats = new Statistics();
+            SimpleStatistics stats = new SimpleStatistics();
             stats.add(statistics);
             stats.add(other.statistics);
             return new OneQuery(sql, timeSource, stats);
@@ -239,13 +229,13 @@ public class ConnectionSpy extends ConnectionDecorator {
         }
 
 
-        public void inc() {
-            statistics.inc();
+        public void addTime(long timeToAdd) {
+            statistics.addTime(timeToAdd);
         }
 
 
-        public void addTime(long timeToAdd) {
-            statistics.addTime(timeToAdd);
+        public Statistics getStatistics() {
+            return statistics;
         }
     }
 }
